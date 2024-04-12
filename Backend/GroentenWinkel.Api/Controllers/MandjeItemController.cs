@@ -9,14 +9,14 @@ namespace GroentenWinkel.Api.Controllers
   public class MandjeItemController : ControllerBase
   {
     private static List<MandjeItem> MandjeItems = new List<MandjeItem>();
-    private static double Totaal = 0;
     private static string Munt = "EUR";
 
 
     [HttpGet("totaal")]
     public IActionResult GetTotaal()
     {
-      return base.Ok(Totaal);
+      double totaal = MandjeItems.Sum(i => i.TotaalPrijs);
+      return base.Ok(totaal);
     }
 
     [HttpGet]
@@ -41,20 +41,33 @@ namespace GroentenWinkel.Api.Controllers
         MandjeItem? item = MandjeItems.Find(m => m.Winkel.Naam == mandjeItem.Winkel.Naam && m.Groente.Naam == mandjeItem.Groente.Naam);
         if (item == null)
         {
-          
+          mandjeItem.Id = MandjeItems.Count + 1;
           MandjeItems.Add(mandjeItem);
-          Totaal = Math.Round(Totaal + mandjeItem.TotaalPrijs, 2);
+          
         }
         else
         {
           item.Stuk += mandjeItem.Stuk;
           item.TotaalPrijs += mandjeItem.TotaalPrijs;
-          Totaal = Math.Round(Totaal + mandjeItem.TotaalPrijs, 2);
         }
         return Ok(MandjeItems);
       }
       return base.BadRequest(ModelState);
     }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteItem(int id)
+    {
+        var item = MandjeItems.Find(i=> i.Id == id);
+        if (item != null)
+        {
+            MandjeItems.Remove(item);
+            return Ok(MandjeItems);
+        }
+         
+        return base.BadRequest(ModelState);
+    }
+
 
     [HttpPut("changeMunt")]
     public IActionResult ChangeCoin()
@@ -66,7 +79,6 @@ namespace GroentenWinkel.Api.Controllers
         {
           item.Prijs = Math.Round(item.Prijs * 0.92, 2);
           item.TotaalPrijs = Math.Round(item.TotaalPrijs * 0.92, 2);
-          Totaal = Math.Round(Totaal * 0.92, 2);
         }
       } else
       {
@@ -75,7 +87,6 @@ namespace GroentenWinkel.Api.Controllers
         {
           item.Prijs = Math.Round(item.Prijs / 0.92, 2);
           item.TotaalPrijs = Math.Round(item.TotaalPrijs / 0.92, 2);
-          Totaal = Math.Round(Totaal / 0.92, 2);
         }
       }
       return base.Ok(MandjeItems);
