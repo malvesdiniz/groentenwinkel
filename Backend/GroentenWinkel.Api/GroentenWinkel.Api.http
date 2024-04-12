@@ -1,0 +1,6 @@
+@GroentenWinkel.Api_HostAddress = http://localhost:5217
+
+GET {{GroentenWinkel.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
